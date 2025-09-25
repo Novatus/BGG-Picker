@@ -1,0 +1,52 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+.loader {
+    border-top-color: #3498db;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+/* Styles for the slot machine */
+#slot-container {
+    mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent 100%);
+}
+/* Chevrons for the spinner indicator */
+#slot-container::before,
+#slot-container::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px; /* Increased size */
+    height: 36px; /* Increased size */
+    background-repeat: no-repeat;
+    background-size: contain;
+    z-index: 10;
+}
+#slot-container::before {
+    top: -8px; /* Position top chevron */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%233b82f6'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+#slot-container::after {
+    bottom: -12px; /* Shifted down */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%233b82f6'%3E%3Cpath fill-rule='evenodd' d='M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+.slot-item {
+    flex-shrink: 0;
+    width: 140px;
+    height: 140px;
+}
+/* Custom scrollbar for the lists */
+#unplayed-list::-webkit-scrollbar, #expansion-list::-webkit-scrollbar {
+    width: 8px;
+}
+#unplayed-list::-webkit-scrollbar-track, #expansion-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+#unplayed-list::-webkit-scrollbar-thumb, #expansion-list::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* gray-600 */
+    border-radius: 20px;
+    border: 3px solid #1f2937; /* gray-800 */
+}
