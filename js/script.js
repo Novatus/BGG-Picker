@@ -225,11 +225,12 @@ async function fetchGameDetails(ids) {
     return await fetchWithRetries(url);
 }
 
-async function fetchWithRetries(url) {
+async function fetchWithRetries(bggUrl) {
     let attempts = 0;
+    const proxyUrl = `/api/bgg-proxy?url=${encodeURIComponent(bggUrl)}`;
     while (attempts < 5) {
         try {
-            const response = await fetch(url);
+            const response = await fetch(proxyUrl);
             if (response.status === 200) {
                 const text = await response.text();
                 if (text.includes("Your request for collection has been accepted")) {
