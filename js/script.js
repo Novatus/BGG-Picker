@@ -125,9 +125,11 @@ function parseItems(xmlDoc) {
         if (numPlays === "0") {
             const nameNode = items[i].querySelector("name");
             const name = nameNode ? (nameNode.textContent.trim() || nameNode.getAttribute('value')?.trim()) : null;
-            if (name) {
+            const rawId = items[i].getAttribute('objectid');
+            const sanitizedId = rawId ? String(rawId).replace(/[^0-9]/g, '') : '';
+            if (name && sanitizedId) {
                 games.push({
-                    id: items[i].getAttribute('objectid'),
+                    id: sanitizedId,
                     name: name,
                     thumbnail: items[i].querySelector("thumbnail")?.textContent || 'https://placehold.co/140x140/eeeeee/cccccc?text=No+Image'
                 });
@@ -141,11 +143,12 @@ function parseGameDetails(xmlDoc) {
     const detailsMap = new Map();
     const items = xmlDoc.getElementsByTagName("item");
     for (const item of items) {
-        const id = item.getAttribute('id');
+        const rawId = item.getAttribute('id');
+        const id = rawId ? String(rawId).replace(/[^0-9]/g, '') : null;
         const minPlayers = item.querySelector('minplayers')?.getAttribute('value');
         const maxPlayers = item.querySelector('maxplayers')?.getAttribute('value');
         if (id && minPlayers && maxPlayers) {
-            detailsMap.set(id, { min: parseInt(minPlayers), max: parseInt(maxPlayers) });
+            detailsMap.set(id, { min: parseInt(minPlayers, 10), max: parseInt(maxPlayers, 10) });
         }
     }
     return detailsMap;
@@ -167,9 +170,9 @@ function populateUnplayedList(games, expansions, detailsMap) {
         const playerIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline-block" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
         return `
             <div class="flex items-center p-2 mb-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-                <img src="${game.thumbnail}" alt="${game.name}" class="w-12 h-12 object-cover rounded-md mr-4 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/48x48/eeeeee/cccccc?text=N/A';">
-                <span class="font-medium text-sm text-left flex-grow">${game.name}</span>
-                <span class="ml-4 px-2 py-1 text-xs font-semibold text-gray-700 bg-gray-200 dark:text-gray-200 dark:bg-gray-600 rounded-full flex-shrink-0 flex items-center">${playerIcon} ${playerCountStr}</span>
+                <img src="${escapeHtml(game.thumbnail)}" alt="${escapeHtml(game.name)}" class="w-12 h-12 object-cover rounded-md mr-4 flex-shrink-0" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/48x48/eeeeee/cccccc?text=N/A';">
+                <span class="font-medium text-sm text-left flex-grow">${escapeHtml(game.name)}</span>
+                <span class="ml-4 px-2 py-1 text-xs font-semibold text-gray-700 bg-gray-200 dark:text-gray-200 dark:bg-gray-600 rounded-full flex-shrink-0 flex items-center">${playerIcon} ${escapeHtml(playerCountStr)}</span>
             </div>
         `;
     };
@@ -200,7 +203,7 @@ function setupSlotMachine(games, maxPlayers) {
     const shuffledGames = [...games].sort(() => Math.random() - 0.5);
     const reelItems = [...shuffledGames, ...shuffledGames, ...shuffledGames, ...shuffledGames, ...shuffledGames];
 
-    reel.innerHTML = reelItems.map(game => `<div class="slot-item mx-2 flex flex-col items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-lg p-2 text-center"><img src="${game.thumbnail}" alt="${game.name}" class="w-20 h-20 object-cover rounded-md mb-1" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/80x80/eeeeee/cccccc?text=No+Img';"><span class="text-xs font-medium truncate w-full">${game.name}</span></div>`).join('');
+    reel.innerHTML = reelItems.map(game => `<div class="slot-item mx-2 flex flex-col items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-lg p-2 text-center"><img src="${escapeHtml(game.thumbnail)}" alt="${escapeHtml(game.name)}" class="w-20 h-20 object-cover rounded-md mb-1" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/80x80/eeeeee/cccccc?text=No+Img';"><span class="text-xs font-medium truncate w-full">${escapeHtml(game.name)}</span></div>`).join('');
 
     const winner = games[Math.floor(Math.random() * games.length)];
     const winnerIndexInMiddle = shuffledGames.findIndex(g => g.name === winner.name) + (shuffledGames.length * 2);
@@ -216,7 +219,7 @@ function setupSlotMachine(games, maxPlayers) {
     }, 100);
 
     reel.addEventListener('transitionend', () => {
-        document.getElementById('final-result').innerHTML = `<p class="mb-2">It's time for:</p><a href="https://boardgamegeek.com/boardgame/${winner.id}" target="_blank" rel="noopener noreferrer" class="group inline-block"><strong class="text-2xl text-blue-500 dark:text-blue-400 group-hover:underline">${winner.name}!</strong><img src="${winner.thumbnail}" alt="Box art for ${winner.name}" class="mt-4 mx-auto rounded-lg shadow-md max-w-[200px] group-hover:opacity-80 transition-opacity" onerror="this.onerror=null;this.src='https://placehold.co/200x200/eeeeee/cccccc?text=No+Image';"></a>`;
+        document.getElementById('final-result').innerHTML = `<p class="mb-2">It's time for:</p><a href="https://boardgamegeek.com/boardgame/${encodeURIComponent(winner.id)}" target="_blank" rel="noopener noreferrer" class="group inline-block"><strong class="text-2xl text-blue-500 dark:text-blue-400 group-hover:underline">${escapeHtml(winner.name)}!</strong><img src="${escapeHtml(winner.thumbnail)}" alt="Box art for ${escapeHtml(winner.name)}" class="mt-4 mx-auto rounded-lg shadow-md max-w-[200px] group-hover:opacity-80 transition-opacity" onerror="this.onerror=null;this.src='https://placehold.co/200x200/eeeeee/cccccc?text=No+Image';"></a>`;
     }, { once: true });
 }
 
@@ -284,5 +287,15 @@ function displayMessage(message, type) {
     if (type === 'error') messageClass = 'text-red-500 dark:text-red-400';
     if (type === 'success') messageClass = 'text-gray-700 dark:text-gray-300';
     if (type === 'info') messageClass = 'text-yellow-600 dark:text-yellow-400';
-    resultDiv.innerHTML = `<div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700 ${messageClass}">${message}</div>`;
+    resultDiv.innerHTML = `<div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700 ${messageClass}">${escapeHtml(message)}</div>`;
+}
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
