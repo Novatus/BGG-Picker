@@ -1,5 +1,15 @@
 {
+  "scripts": {
+    "dev": "tailwindcss -i css/input.css -o css/style.css --watch",
+    "build:css": "tailwindcss -i css/input.css -o css/style.css --minify",
+    "watch:css": "tailwindcss -i css/input.css -o css/style.css --watch"
+  },
   "dependencies": {
     "jsdom": "^29.1.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "vercel": "^56.5.0"
   }
 }
