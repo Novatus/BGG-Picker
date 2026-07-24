@@ -1,0 +1,11 @@
+HTTP/2 401 
+date: Fri, 24 Jul 2026 16:10:30 GMT
+content-type: text/html; charset=UTF-8
+server: cloudflare
+access-control-allow-origin: *
+www-authenticate: Bearer realm="xml api"
+access-control-expose-headers: WWW-Authenticate
+via: 1.1 google
+cf-cache-status: DYNAMIC
+cf-ray: a2043205ab50fc79-CVG
+

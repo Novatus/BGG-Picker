@@ -108,13 +108,27 @@ function parseItems(xmlDoc) {
     const items = xmlDoc.getElementsByTagName("item");
     const games = [];
     for (let i = 0; i < items.length; i++) {
+        let numPlays = null;
         const numPlaysNode = items[i].querySelector("numplays");
-        if (numPlaysNode && numPlaysNode.textContent === "0") {
+        
+        if (numPlaysNode) {
+            numPlays = numPlaysNode.textContent.trim();
+        } else {
+            const statsNode = items[i].querySelector("stats");
+            if (statsNode && statsNode.hasAttribute("numplays")) {
+                numPlays = statsNode.getAttribute("numplays").trim();
+            } else if (items[i].hasAttribute("numplays")) {
+                numPlays = items[i].getAttribute("numplays").trim();
+            }
+        }
+
+        if (numPlays === "0") {
             const nameNode = items[i].querySelector("name");
-            if (nameNode) {
+            const name = nameNode ? (nameNode.textContent.trim() || nameNode.getAttribute('value')?.trim()) : null;
+            if (name) {
                 games.push({
                     id: items[i].getAttribute('objectid'),
-                    name: nameNode.textContent,
+                    name: name,
                     thumbnail: items[i].querySelector("thumbnail")?.textContent || 'https://placehold.co/140x140/eeeeee/cccccc?text=No+Image'
                 });
             }
@@ -233,7 +247,7 @@ async function fetchWithRetries(bggUrl) {
             const response = await fetch(proxyUrl);
             if (response.status === 200) {
                 const text = await response.text();
-                if (text.includes("Your request for collection has been accepted")) {
+                if (text.includes("has been accepted") || text.includes("in the queue")) {
                      attempts++;
                      const loadingText = document.getElementById('loading-text');
                      if(loadingText) loadingText.textContent = `BGG queued request. Retrying... (${attempts}/5)`;
